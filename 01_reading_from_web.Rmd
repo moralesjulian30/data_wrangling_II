@@ -1,0 +1,66 @@
+---
+title: "01_reading_from_web"
+author: "Julian Morales"
+date: "2026-10-20"
+output: github_document
+---
+```{r}
+library(rvest)
+library(httr)
+library(tidyverse)
+```
+
+##Import NSDUH
+
+```{r}
+url = "https://www.samhsa.gov/data/sites/default/files/NSDUHsaeShortTermCHG2015/NSDUHsaeShortTermCHG2015.htm"
+
+drug_use_html = 
+  read_html(url)
+```
+
+pull the tables out
+
+```{r}
+marj_df = 
+  drug_use_html |> 
+  html_table() |> #gets all tables in html
+  first() |> #takes first table
+  slice(-1) #removes rows not wanted
+```
+
+##Import some star wars data
+
+pull in the html
+
+```{r}
+swm_html = 
+  read_html_live("https://www.imdb.com/list/ls070150896/")
+```
+
+next up .... selector gadget
+
+```{r}
+swm_title_vec =
+  swm_html|> 
+  html_elements(".ipc-title-link-wrapper .ipc-title__text") |> 
+  html_text()
+
+swm_metascore_vec =
+  swm_html |> 
+  html_elements(".metacritic-score-box") |> 
+  html_text()
+
+swm_runtime_vec = 
+  swm_html |> 
+  html_elements(".ipc-inline-list__item:nth-child(2)") |> 
+  html_text()
+
+swm_df = 
+  tibble(
+    title = swm_title_vec, 
+    score = swm_metascore_vec,
+    runtime = swm_runtime_vec
+  )
+```
+
