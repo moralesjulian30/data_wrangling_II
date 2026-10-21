@@ -93,8 +93,6 @@ as.numeric(vec_sex)
 ```
 
 
-
-
 ##Import NSDUH
 
 ```{r}
@@ -104,12 +102,57 @@ drug_use_html =
   read_html(url)
 ```
 
-pull the tables out
+Cleaning the tables
 
 ```{r}
 marj_df = 
   drug_use_html |> 
   html_table() |> #gets all tables in html
   first() |> #takes first table
-  slice(-1) #removes rows not wanted
+  slice(-1) |>  #removes rows not wanted
+  select(-contains("P Value")) |> #Everything that DOESNT have P Value
+  pivot_longer(
+    -State, #everything BUT state
+    names_to = "age_year",
+    values_to = "prev"
+  ) |> 
+  separate(age_year, into = c("age", "year"), sep = "\\(") |> #splits column to two 
+  mutate(
+    year = str_replace(year, "\\)", ""), #removes character from values
+    prev = str_replace(prev, "[a-c]", ""), #removes character from values
+    prev = as.numeric(prev)
+  )
 ```
+
+
+
+make a quick plot
+
+```{r}
+marj_df |> 
+  filter(age =="12-17") |> 
+  mutate(State = fct_reorder(State, prev)) |> 
+  ggplot(aes(x=State, y = prev, color = year)) + 
+  geom_point() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+
+## NYC Airbnb
+
+```{r}
+data("nyc_airbnb")
+
+nyc_airbnb |> 
+  filter(
+    neighbourhood_group == "Manhattan",
+    price < 1000) |> 
+  mutate(neighbourhood = fct_reorder(neighbourhood, price)) |> 
+  ggplot(aes(x = neighbourhood, y = price)) + 
+  geom_boxplot() + 
+  coord_flip() #changes x and y axis
+```
+
+
+## Restaurant inspections
+
