@@ -1,0 +1,115 @@
+---
+title: "02_sstrings_and_factors"
+author: "Julian Morales"
+date: "2026-10-21"
+output: html_document
+---
+```{r}
+library(rvest)
+library(httr)
+library(tidyverse)
+library(p8105.datasets)
+```
+
+## strings and regex
+
+```{r}
+string_vec = c("my", "name", "is", "jeff")
+
+str_detect(string_vec, "jeff") #basically command F with more control
+str_detect(string_vec, "My")
+str_detect(string_vec, "my")
+
+str_replace(string_vec, "my", "My")
+```
+
+```{r}
+string_vec = c(
+  "i think we all rule for participating",
+  "i think i have been caught",
+  "i think this will be quite fun actually",
+  "it will be fun, i think"
+  )
+
+str_detect(string_vec, "i think")
+str_detect(string_vec, "^i think")
+str_detect(string_vec, "i think$")
+```
+
+```{r}
+string_vec = c(
+  "Time for a Pumpkin Spice Latte!",
+  "went to the #pumpkinpatch last weekend",
+  "Pumpkin Pie is obviously the best pie",
+  "SMASHING PUMPKINS -- LIVE IN CONCERT!!"
+  )
+
+str_detect(string_vec, "[Pp]umpkin") #either capital or lowercase is true
+```
+
+```{r}
+string_vec = c(
+  '7th inning stretch',
+  '1st half soon to begin. Texas won the toss.',
+  'she is 5 feet 4 inches tall',
+  '3AM - cant sleep :('
+  )
+
+str_detect(string_vec, "[0-9][a-zA-Z]")
+```
+
+```{r}
+string_vec = c(
+  'Its 7:11 in the evening',
+  'want to go to 7-11?',
+  'my flight is AA711',
+  'NetBios: scanning ip 203.167.114.66'
+  )
+
+str_detect(string_vec, "7.11")
+```
+
+```{r}
+string_vec = c(
+  'The CI is [2, 5]',
+  ':-]',
+  ':-[',
+  'I found the answer on pages [6-7]'
+  )
+
+str_detect(string_vec, "\\[") #if you want to look for the bracket itself, use  \\
+```
+
+## quick note on factors
+
+```{r}
+vec_sex = factor(c("male", "male", "female", "female"))
+
+as.numeric(vec_sex) #places it into its levels
+
+vec_sex = fct_relevel(vec_sex, "male") #releveling categories
+
+as.numeric(vec_sex)
+```
+
+
+
+
+##Import NSDUH
+
+```{r}
+url = "https://www.samhsa.gov/data/sites/default/files/NSDUHsaeShortTermCHG2015/NSDUHsaeShortTermCHG2015.htm"
+
+drug_use_html = 
+  read_html(url)
+```
+
+pull the tables out
+
+```{r}
+marj_df = 
+  drug_use_html |> 
+  html_table() |> #gets all tables in html
+  first() |> #takes first table
+  slice(-1) #removes rows not wanted
+```
